@@ -4,8 +4,10 @@ import MouvementService from '../services/mouvement.service';
 import { DetailMouvement } from '../interfaces/detailMouvement.interface';
 import ProduitService from '@/services/produits.service';
 import DetailmouvementService from '../services/detailMouvement.service';
+import { ApiResponse } from '../interfaces/apitResponse';
+import BaseController from './base.controller';
 
-class DetailMouvementController {
+class DetailMouvementController extends BaseController {
     public mouvementService = new MouvementService();
     public produitService = new ProduitService();
     public detaiService = new DetailmouvementService();
@@ -18,16 +20,21 @@ class DetailMouvementController {
       const offset: number = limit * (page - 1);
       const findAllDetailMouvementsData: DetailMouvement[] = await this.detaiService.findAllDetailMouvement(limit, offset);
       const findAllDetailMouvements: DetailMouvement[] = await this.detaiService.findAllDetailMouvement(null, null);
+      const totalRows:number = findAllDetailMouvements.length;
 
-      const rows = {
-        data: findAllDetailMouvementsData,
-        status: 200,
-        totalRows: findAllDetailMouvements.length,
-        limit: limit,
-        page: page
+      let message = "";
+      let success = true;
+
+      if ( totalRows > 0 ) {
+        message = "Get all detail with success";
+        success = true;
+      }else{
+        message = "Not found details";
+        success = false;
       }
 
-      res.status(200).json({ rows, message: 'findAll detail mouvement' });
+      const data: ApiResponse = this.response( success, message, findAllDetailMouvementsData, totalRows, limit, page);
+      res.status(200).json(data);
     } catch (error) {
       next(error);
     }
@@ -37,16 +44,21 @@ class DetailMouvementController {
     try {
       const id:number = +req.params.id;
       const findAllDetailMouvementsData: DetailMouvement[] = await this.detaiService.findByIdDetail(id);
+      const totalRows: number = findAllDetailMouvementsData.length;
+      let message = "";
+      let success = true;
 
-      const data = {
-        status: 200,
-        totalRows: findAllDetailMouvementsData.length,
-        limit: null,
-        page: 1,
-        rows: findAllDetailMouvementsData,
+      if ( totalRows > 0 ) {
+        message = "Get one detail success";
+        success = true;
+      }else{
+        message = "Not found detail";
+        success = false;
       }
 
-      res.status(200).json({ data, message: 'findAll detail mouvement' });
+      const data: ApiResponse = this.response(success, message, findAllDetailMouvementsData, totalRows, null, 1)
+
+      res.status(200).json(data);
     } catch (error) {
       next(error);
     }
