@@ -3,8 +3,10 @@ import { NextFunction, Request, Response } from 'express';
 import { Category } from '@interfaces/category.interface';
 import categoryService from '@services/category.service';
 import { CreateCategoryDto } from '@/dtos/category.dto';
+import BaseController from './base.controller';
+import { ApiResponse } from '../interfaces/apitResponse';
 
-class CategoryController {
+class CategoryController extends BaseController {
   public categoryService = new categoryService();
 
   public getCategory = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -15,16 +17,10 @@ class CategoryController {
       const offset: number = limit * (page - 1);
       const findAllCategorysData: Category[] = await this.categoryService.findAllCategory(limit, offset);
       const findAllCategorys: Category[] = await this.categoryService.findAllCategory(null, null);
+      const totalRows: number = findAllCategorys.length;
+      const data: ApiResponse = this.response(true, 'get all category success', findAllCategorysData, totalRows, limit, page);
 
-      const data = {
-        status: 200,
-        totalRows: findAllCategorys.length,
-        limit: limit,
-        page: page,
-        rows: findAllCategorysData, 
-      }
-
-      res.status(200).json({ data, message: 'get all category success' });
+      res.status(200).json(data);
     } catch (error) {
       next(error);
     }
