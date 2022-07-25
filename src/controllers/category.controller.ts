@@ -18,7 +18,18 @@ class CategoryController extends BaseController {
       const findAllCategorysData: Category[] = await this.categoryService.findAllCategory(limit, offset);
       const findAllCategorys: Category[] = await this.categoryService.findAllCategory(null, null);
       const totalRows: number = findAllCategorys.length;
-      const data: ApiResponse = this.response(true, 'get all category success', findAllCategorysData, totalRows, limit, page);
+      let message = "";
+      let success = true;
+
+      if ( totalRows > 0 ) {
+        message = "Get one product success";
+        success = true;
+      }else{
+        message = "Product not found";
+        success = false;
+      }
+
+      const data: ApiResponse = this.response(success, message, findAllCategorysData, totalRows, limit, page);
 
       res.status(200).json(data);
     } catch (error) {
@@ -54,9 +65,18 @@ class CategoryController extends BaseController {
     try {
       const CategoryId = Number(req.params.id);
       const findCategoryByIdData: Category[] = await this.categoryService.findCategoryById(CategoryId);
-      const totalRows: number =  findCategoryByIdData.length,
-      const data: ApiResponse = this.response(true, 'findCategory data success', findCategoryByIdData, totalRows, null, 1);
+      const totalRows: number =  findCategoryByIdData.length;
+      let message = "";
+      let success = true;
 
+      if ( totalRows > 0 ) {
+        message = "Get one category success";
+        success = true;
+      }else{
+        message = "Category not found";
+        success = false;
+      }
+      const data: ApiResponse = this.response(success, message, findCategoryByIdData, totalRows, null, 1);
       res.status(200).json({ data });
     } catch (error) {
       next(error);
