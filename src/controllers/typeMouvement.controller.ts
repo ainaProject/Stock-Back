@@ -3,9 +3,11 @@ import { NextFunction, Request, Response } from 'express';
 import { TypeMouvement } from '@/interfaces/typeMouvement.interface';
 import TypeMouvementService from '../services/typeMouvement.service';
 import { TypeMouvementDto } from '../dtos/typeMouvement.dto';
+import { ApiResponse } from '@/interfaces/apitResponse';
+import BaseController from './base.controller';
 
 
-class TypeMouvementController {
+class TypeMouvementController extends BaseController {
   public typeMouvementService = new TypeMouvementService();
 
   public getTypeMouvement = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -14,17 +16,22 @@ class TypeMouvementController {
       const limit: number = +query.limit;
       const page: number = +query.page;
       const offset: number = limit * (page - 1);
-      const findAllType: TypeMouvement[] = await this.typeMouvementService.findAllType(limit, offset);
-      
-      const rows = {
-        data: findAllType,
-        status: 200,
-        totalRows: findAllType.length,
-        limit: limit,
-        page: page
+      const findAllTypeData: TypeMouvement[] = await this.typeMouvementService.findAllType(limit, offset);
+      const findAllType: TypeMouvement[] = await this.typeMouvementService.findAllType(null, null);
+      const totalRows: number = findAllType.length;
+      let message = "";
+      let success = true;
+
+      if ( totalRows > 0 ) {
+        message = "Get all mouvement type with success";
+        success = true;
+      }else{
+        message = "Not found mouvement type on this moments";
+        success = false;
       }
 
-      res.status(200).json({ rows, message: 'get all typeMouvement success' });
+      const data: ApiResponse = this.response( success, message, findAllTypeData, totalRows, limit, page);
+      res.status(200).json(data);
     } catch (error) {
       next(error);
     }
@@ -58,16 +65,21 @@ class TypeMouvementController {
     try {
       const typeMouvementId = Number(req.params.id);
       const findMouvementByIdData: TypeMouvement[] = await this.typeMouvementService.findTypeById(typeMouvementId);
+      const totalRows: number = findMouvementByIdData.length;
 
-      const rows = {
-        data: findMouvementByIdData,
-        status: 200,
-        totalRows: findMouvementByIdData.length,
-        limit: null,
-        page: null
+      let message = "";
+      let success = true;
+
+      if ( totalRows > 0 ) {
+        message = "Get one mouvement type with success";
+        success = true;
+      }else{
+        message = "Not found mouvement type";
+        success = false;
       }
 
-      res.status(200).json({ rows, message: 'findTypeMouvement data success' });
+      const data: ApiResponse = this.response( success, message, findMouvementByIdData, totalRows, null, 1);
+      res.status(200).json(data);
     } catch (error) {
       next(error);
     }

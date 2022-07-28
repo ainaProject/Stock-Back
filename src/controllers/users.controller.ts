@@ -2,8 +2,10 @@ import { NextFunction, Request, Response } from 'express';
 import { CreateUserDto } from '@dtos/users.dto';
 import { User } from '@interfaces/users.interface';
 import userService from '@services/users.service';
+import BaseController from './base.controller';
+import { ApiResponse } from '@/interfaces/apitResponse';
 
-class UsersController {
+class UsersController extends BaseController {
   public userService = new userService();
 
   public getUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -14,15 +16,21 @@ class UsersController {
       const offset: number = limit * (page - 1);
       const findAllUsersData: User[] = await this.userService.findAllUser(limit, offset);
       const findAllUsers: User[] = await this.userService.findAllUser(null, null);
+      const totalRows: number = findAllUsers.length;
 
-      const data: any = {
-        status: 200,
-        totalRows: findAllUsers.length,
-        limit: limit,
-        page: page,
-        rows: findAllUsersData,
-      };
-      res.status(200).json({ data, message: 'findAll' });
+      let message = '';
+      let success = true;
+
+      if (totalRows > 0) {
+        message = 'Get all user with success';
+        success = true;
+      } else {
+        message = 'Not found thresolde';
+        success = false;
+      }
+
+      const data: ApiResponse = this.response(success, message, findAllUsersData, totalRows, limit, page);
+      res.status(200).json(data);
     } catch (error) {
       next(error);
     }

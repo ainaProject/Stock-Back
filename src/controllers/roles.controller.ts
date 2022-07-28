@@ -3,8 +3,10 @@ import { NextFunction, Request, Response } from 'express';
 import { Roles } from '@interfaces/roles.interface';
 import RolesService from '@services/roles.service';
 import { CreateRolesDto } from '@/dtos/roles.dto';
+import BaseController from './base.controller';
+import { ApiResponse } from '@/interfaces/apitResponse';
 
-class RolesController {
+class RolesController extends BaseController {
   public roleService = new RolesService();
 
   public getRoles = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -16,15 +18,20 @@ class RolesController {
       const findAllRolesData: Roles[] = await this.roleService.findAllRoles(limit, offset);
       const findAllRoles: Roles[] = await this.roleService.findAllRoles(null, null);
 
-      const data = {
-        status: 200,
-        totalRows: findAllRoles.length,
-        limit: limit,
-        page: page,
-        rows: findAllRolesData,
+      const totalRows: number = findAllRoles.length;
+      let message = "";
+      let success = true;
+
+      if ( totalRows > 0 ) {
+        message = "Get all roles with success";
+        success = true;
+      }else{
+        message = "Not found role";
+        success = false;
       }
 
-      res.status(200).json({ data, message: 'get all roles success' });
+      const data: ApiResponse = this.response( success, message, findAllRolesData, totalRows, limit, page);
+      res.status(200).json(data);
     } catch (error) {
       next(error);
     }
@@ -58,14 +65,20 @@ class RolesController {
     try {
       const RoleId = Number(req.params.id);
       const findRoleByIdData: Roles[] = await this.roleService.findRolesById(RoleId);
-      const data = {
-        status: 200,
-        totalRows: findRoleByIdData.length,
-        limit: null,
-        page: 1,
-        rows: findRoleByIdData,
+      const totalRows: number = findRoleByIdData.length;
+      let message = "";
+      let success = true;
+
+      if ( totalRows > 0 ) {
+        message = "Get one role with success";
+        success = true;
+      }else{
+        message = "Not found roles";
+        success = false;
       }
-      res.status(200).json({ data, message: 'findRole data success' });
+
+      const data: ApiResponse = this.response( success, message, findRoleByIdData, totalRows, null, 1);
+      res.status(200).json(data);
     } catch (error) {
       next(error);
     }

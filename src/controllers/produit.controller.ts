@@ -23,7 +23,7 @@ class ProduitController extends BaseController {
       let success = true;
 
       if ( totalRows > 0 ) {
-        message = "Get one product success";
+        message = "Get all product with success";
         success = true;
       }else{
         message = "Product not found";
