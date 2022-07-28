@@ -15,8 +15,10 @@ import { Stock } from '@/interfaces/stock.interface';
 import StockService from '@/services/stock.service';
 import { StockEntity } from '@/entities/stock.entity';
 import { CreatestockDto } from '@/dtos/stock.dto';
+import BaseController from './base.controller';
+import { ApiResponse } from '../interfaces/apitResponse';
 
-class MouvementController {
+class MouvementController extends BaseController{
     public mouvementService = new MouvementService();
     public produitService = new ProduitService();
     public detaiService = new DetailmouvementService();
@@ -31,15 +33,21 @@ class MouvementController {
 
       const findAllMouvementsData: Mouvement[] = await this.mouvementService.findAllMouvement(limit, offset);
       const findAllMouvements: Mouvement[] = await this.mouvementService.findAllMouvement(null, null);
-      const data: any = {
-        status: 200,
-        totalRows: findAllMouvements.length,
-        limit: limit,
-        page: page,
-        rows: findAllMouvementsData
+      const totalRows: number = findAllMouvements.length;
+
+      let message = "";
+      let success = true;
+
+      if ( totalRows > 0 ) {
+        message = "Get all mouvement with success";
+        success = true;
+      }else{
+        message = "Not found mouvement in this moment";
+        success = false;
       }
 
-      res.status(200).json({ data, message: 'findAll mouvement' });
+      const data: ApiResponse = this.response( success, message, findAllMouvementsData, totalRows, limit, page);
+      res.status(200).json(data);
     } catch (error) {
       next(error);
     }
@@ -49,14 +57,20 @@ class MouvementController {
     try {
       const mouvementId = Number(req.params.id);
       const findMouvement: Mouvement[] = await this.mouvementService.findMouvementById(mouvementId);
-      const data: any = {
-        status: 200,
-        totalRows: findMouvement.length,
-        limit: null,
-        page: 1,
-        rows: findMouvement
+      const totalRows: number = findMouvement.length;
+      let message = "";
+      let success = true;
+
+      if ( totalRows > 0 ) {
+        message = "Get mouvement by id with success";
+        success = true;
+      }else{
+        message = "Not found id";
+        success = false;
       }
-      res.status(200).json({ data, message: 'findMouvement data success' });
+
+      const data: ApiResponse = this.response( success, message, findMouvement, totalRows, null, 1);
+      res.status(200).json(data);
     } catch (error) {
       next(error);
     }
